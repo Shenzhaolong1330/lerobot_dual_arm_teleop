@@ -153,10 +153,16 @@ class FrankaInterfaceClient:
 
 
     def robot_update_desired_joint_positions(self, positions: np.ndarray):
-        self.server.robot_update_desired_joint_positions(positions.tolist())
+        try:
+            self.server.robot_update_desired_joint_positions(positions.tolist())
+        except Exception as e:
+            log.warning(f"[ROBOT] robot_update_desired_joint_positions failed: {e}")
 
     def robot_update_desired_ee_pose(self, pose: np.ndarray):
-        self.server.robot_update_desired_ee_pose(pose.tolist())
+        try:
+            self.server.robot_update_desired_ee_pose(pose.tolist())
+        except Exception as e:
+            log.warning(f"[ROBOT] robot_update_desired_ee_pose failed: {e}")
 
     def robot_terminate_current_policy(self):
         self.server.robot_terminate_current_policy()
