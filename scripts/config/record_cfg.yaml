@@ -1,12 +1,12 @@
 record:
-  repo_id: &repo_id "szl/pick_red_cube_grey_box" 
+  repo_id: &repo_id "roboticiq/pick_all_yellow_cube_to_brown_basket" 
   # repo_id: &repo_id "scylearning/pick_greencube_into_trashb
   # Suggested format: <hf_username>/<description>, description = task.description -> Verb_SourceObject_prep_TargetObject
   # e.g. Pick up the green cube and put it into the trash bin -> pick_greencube_into_trashbin
   debug: 0 # if True, robot will not execute any actions, but gripper can still be controlled
   user_notes:  # any additional notes about the dataset
   fps: 15 # dataset and camera frame rate
-  control_mode: &control_mode "isoteleop" # "isoteleop" or "spacemouse"
+  control_mode: &control_mode "oculus" # "isoteleop" or "spacemouse" or "oculus"
   run_mode: "run_record" # "run_record" or "run_policy" or "run_mix"
 
   teleop:
@@ -17,7 +17,8 @@ record:
       hardware_offsets: [-0.12183455210997171, -0.002845966063342931, -0.06250428305273764, -2.0498354593763044, 0.05259129256457092, 1.9984585428810417, -0.9046528345737315] 
       use_gripper: &use_gripper True # whether the slave robot can use gripper
       joint_ids: [0, 1, 2, 3, 4, 5, 6]
-      joint_offsets: [6.283, 3.142, 0.0, 4.712, 4.712, 6.283, 2.496]
+      # joint_offsets: [6.283, 3.142, 0.0, 4.712, 4.712, 6.283, 2.496] # franka hand offsets
+      joint_offsets: [0.0, 3.142, 6.283, 4.712, 4.712, 6.283, 3.0] # robotiq hand offsets
       joint_signs: [1, 1, 1, 1, 1, -1, 1]
       gripper_config: [7, 0.9664079, 1.9404857] # id, min, max
     spacemouse_config:
@@ -25,6 +26,11 @@ record:
       channel_signs: [-1, -1, 1, -1, -1, 1]
       use_gripper: *use_gripper # whether the spacemouse robot can use gripper
       pose_scaler: [0.01, 0.05] # scaler for spacemouse actions [position, attitude]
+    oculus_config:
+      ip: "192.168.110.62"  # Oculus Quest IP address
+      use_gripper: *use_gripper
+      pose_scaler: [2.0, 1.5]  # scaler for oculus actions [position, attitude]
+      channel_signs: [1, 1, 1, -1, -1, 1]  # signs for each axis [x, y, z, rx, ry, rz]
     placo:
       visualize_placo: False
       placo_dt: 0.01
@@ -41,19 +47,21 @@ record:
     gripper_max_open: 0.085 # gripper max open width in meters 0.0801 for franka hand, 0.12 for robotiq gripper
 
   policy:
-    type: "diffusion"  # 策略类型 (act, diffusion)
+    type: "act"  # 策略类型 (act, diffusion)
     device: "cuda"  # 运行设备 (cuda, cpu)
     push_to_hub: False  # 禁用模型推送
-    pretrained_path: "/home/deepcybo/lerobot/franka_workspace/outputs/train/diffusion_test7/checkpoints/last/pretrained_model"  
+    pretrained_path: "/home/deepcybo/lerobot/franka_workspace/outputs/train/act_test9/checkpoints/last/pretrained_model"  
     # 预训练模型路径下要包括config.json
 
   task:
     # description: "Pick up the green cube and put it into the trash bin." # task description
-    description: "pick up the red cube and put it into the grey box" # task description
-    num_episodes: 60 # number of episodes to record
+    # description: "pick up all blue cubes and put them into the brown basket" # task description
+    description: "pick up all yellow cubes and put them into the brown basket" # task description
+    # description: "pick up the red chili and put it into the brown basket"
+    num_episodes: 1 # number of episodes to record
     display: True # Whether to display the data during recording
     resume: false # whether to resume from an existing dataset
-    resume_dataset: szl/pick_all_yellowcubes_20260203_v01 # dataset to resume from if resume is True
+    resume_dataset: roboticiq/pick_all_yellow_cube_to_brown_basket_20260208_v01 # dataset to resume from if resume is True
   time:
     episode_time_sec: 6000 # max time per episode in seconds
     reset_time_sec: 6000 # max time to reset between episodes in seconds
@@ -69,15 +77,15 @@ record:
     push_to_hub: False # whether to push the dataset to your huggingface repo after recording
 
 replay:
-  dataset_name: szl/pick_red_cube_grey_box_20260204_v01
-  episode_idx: 10 # episode index to replay
+  dataset_name: roboticiq/pick_all_yellow_cube_to_brown_basket_20260208_v01
+  episode_idx: 4 # episode index to replay
   robot:
     ip: *ip
     # gripper_port: *gripper_port
   control_mode: *control_mode 
 
 visualize:
-  dataset_name: szl/pick_red_cube_grey_box_20260204_v01
+  dataset_name: szl/pick_red_cube_grey_box_act_20260208_v01
   episode_index: 10 # episode index to visualize
 
 

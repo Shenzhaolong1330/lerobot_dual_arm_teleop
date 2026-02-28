@@ -15,11 +15,27 @@
 现在我们支持使用 [SpaceMouse](https://3dconnexion.com/) 设备进行末端位姿控制。
 
 <p align="center">
-  <img src="assets/spacemouse.png" alt="Record" width="600">
+  <img src="assets/quest3s.jpg" alt="Record" width="600">
   <br>
 </p>
 
 SpaceMouse 是一个 6 轴输入设备，可用于控制机器人的末端位姿。左按钮用于打开夹爪，右按钮用于关闭夹爪。
+
+### 新功能支持 2
+
+现在我们支持使用 Oculus Quest 3/3s 设备进行末端位姿控制。
+
+<p align="center">
+  <img src="assets/spacemouse.png" alt="Oculus Quest" width="600">
+  <br>
+</p>
+
+Oculus Quest 控制器提供 6 自由度跟踪，实现直观的末端执行器控制。右手控制器用于机器人操作，控制方式如下：
+
+- **RG（右手握持键）**：必须按下才能启动机器人运动
+- **RTr（右手扳机）**：控制夹爪（按下关闭，松开打开）
+- **A 按钮**：请求机器人复位
+- **右手控制器位姿**：控制末端执行器的增量位姿
 
 ## 0. Franka 控制说明
 在这个版本中，使用[Polymetis](https://polymetis-docs.github.io/)对Franka 进行控制，由于Polymetis不支持python3.10，并且推荐单独在NUC上运行，因此在这里用Zerorpc进行远程通信实现，具体流程如下：
@@ -127,6 +143,144 @@ sudo chmod 666 <your_master_port>
 utils-joint-offsets
 ```
 随后，请将脚本输出的`joint_offsets`值填入`cfg.yaml`中的对应配置项
+
+### 2.5 Oculus Quest 设置（用于 Oculus 遥操作模式）
+
+如果您计划使用 Oculus Quest 进行遥操作，请按照以下步骤设置设备：
+
+#### 2.5.1 安装 ADB（Android 调试桥）
+
+ADB 是 Oculus Quest 与计算机之间通信所必需的工具。
+
+```bash
+# 在 Ubuntu 上
+sudo apt install android-tools-adb
+
+# 验证安装
+adb version
+```
+
+#### 2.5.2 在 Oculus Quest 上启用开发者模式
+
+1. 在 [Meta for Developers](https://developer.oculus.com/manage/organizations/create/) 创建或加入开发者组织
+2. 在手机上打开 Meta Quest 应用
+3. 进入 **设置** → 选择您的设备 → **更多设置** → **开发者模式**
+4. 启用 **开发者模式** 开关
+
+#### 2.5.3 连接 Oculus Quest 到计算机
+
+**方式 A：USB 连接（推荐用于初始设置）**
+
+1. 使用 USB-C 线缆将 Oculus Quest 连接到计算机
+2. 佩戴头显并在提示时允许 USB 调试
+3. 勾选 **始终允许来自此计算机**
+4. 验证连接：
+```bash
+adb devices
+# 预期输出：
+# List of devices attached
+# <device_id>    device
+```
+
+**方式 B：无线连接（操作更便捷）**
+
+1. 首先通过 USB 线缆连接
+2. 确保 Oculus Quest 和计算机连接到同一网络
+3. 获取 Oculus Quest 的 IP 地址：
+```bash
+adb shell ip route
+# 查找 "src" 后面的 IP 地址，例如 192.168.110.62
+```
+4. 在 `record_cfg.yaml` 中配置 IP：
+```yaml
+teleop:
+  oculus_config:
+    ip: "192.168.110.62"  # 您的 Oculus Quest IP 地址
+```
+
+#### 2.5.4 安装 Oculus Reader APK
+
+Oculus Reader APK 已随本项目预打包。安装方法：
+
+```bash
+# 进入 APK 目录
+cd lerobot_teleoperator_franka/lerobot_teleoperator_franka/oculus/oculus_reader/APK
+
+# 将 APK 安装到 Oculus Quest
+adb install -r teleop-debug.apk
+```
+
+安装完成后，应用将出现在您的 Oculus Quest 库中的 **未知来源** 下。
+
+#### 2.5.5 在 record_cfg.yaml 中配置 Oculus 遥操作
+
+```yaml
+record:
+  control_mode: "oculus"  # 设置控制模式为 oculus
+  
+  teleop:
+    control_mode: "oculus"
+    oculus_config:
+      ip: "192.168.110.62"  # Oculus Quest IP 地址
+      use_gripper: True
+      pose_scaler: [2.0, 1.5]  # [位置缩放, 姿态缩放]
+      channel_signs: [1, 1, 1, -1, -1, 1]  # 各轴方向符号 [x, y, z, rx, ry, rz]
+```
+
+#### 2.5.6 Oculus 控制器操作说明
+
+| 控制键 | 功能 |
+|--------|------|
+| **RG（右手握持键）** | 按住以启动机器人运动 |
+| **RTr（右手扳机）** | 按下关闭夹爪，松开打开夹爪 |
+| **A 按钮** | 请求机器人复位 |
+| **右手控制器位姿** | 控制末端执行器增量位姿 |
+
+#### 2.5.7 坐标系映射
+
+Oculus 坐标系映射到机器人坐标系如下：
+
+| Oculus 轴 | 机器人轴 | 描述 |
+|-----------|----------|------|
+| X（右） | -Y（左） | 横向移动 |
+| Y（上） | Z（上） | 垂直移动 |
+| Z（向后） | X（前） | 前后移动 |
+
+#### 2.5.8 测试 Oculus 连接
+
+在录制之前，测试 Oculus 连接：
+
+```python
+from lerobot_teleoperator_franka.lerobot_teleoperator_franka.oculus.oculus_robot import OculusRobot
+
+oculus = OculusRobot(ip='192.168.110.62')
+while True:
+    action = oculus.get_action()
+    print(f"增量位姿: {action[:6]}, 夹爪: {action[6]}")
+```
+
+#### 2.5.9 故障排除
+
+**连接问题：**
+```bash
+# 重启 ADB 服务器
+adb kill-server
+adb start-server
+
+# 检查已连接设备
+adb devices
+```
+
+**停止 Oculus 应用：**
+```bash
+adb shell am force-stop com.rail.oculus.teleop
+```
+
+**重新安装 APK：**
+```bash
+adb uninstall com.rail.oculus.teleop
+adb install -r teleop-debug.apk
+```
 
 ## 3. 数据集记录
 

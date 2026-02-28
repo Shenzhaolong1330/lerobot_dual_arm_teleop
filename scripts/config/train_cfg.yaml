@@ -1,22 +1,22 @@
 train:
   dataset:
-    repo_id: "physbrain3/pick_and_place_merged"
+    repo_id: "szl/pick_red_cube_grey_box_act_20260208_v01"
   # 指向包含数据集 repo 的本地目录（要包含 repo_id 子目录），
   # 例如本地缓存路径下的 physbrain3/pick_and_place_merged
-    root: "/home/deepcybo/.cache/huggingface/lerobot/physbrain3/pick_and_place_merged"
+    root: "/home/deepcybo/.cache/huggingface/lerobot/szl/pick_red_cube_grey_box_act_20260208_v01"
 
   env:
 
   policy:
-    type: "diffusion"
+    type: "act"
     device: "cuda"
-    repo_id: "shenzhaolong/diffusion_policy"
+    repo_id: "shenzhaolong/act_policy"
     push_to_hub: false  # 禁用模型推送
 
-  output_dir: "outputs/train/diffusion_test7"
-  job_name: "diffusion_policy_test7"
+  output_dir: "outputs/train/act_test9"
+  job_name: "act_policy_test9"
 
-  resume: False
+  resume: false
   seed: 1000
   # Number of workers for the dataloader.
   num_workers: 4
@@ -26,7 +26,7 @@ train:
   log_freq: 200
   save_checkpoint: True
   # Checkpoint is saved every `save_freq` training iterations and after the last training step.
-  save_freq: 10_000
+  save_freq: 50_00
   use_policy_training_preset: True
 
   eval: 

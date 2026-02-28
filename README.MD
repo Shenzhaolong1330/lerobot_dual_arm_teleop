@@ -21,6 +21,22 @@ Now we support the end-effector pose control using [SpaceMouse](https://3dconnex
 
  The SpaceMouse is a 6-axis input device that can be used to control the end pose of the robot. The left button is used to open the gripper, and the right button is used to close the gripper.
 
+### New Support 2
+
+Now we support the end-effector pose control using Oculus Quest 3/3s devices.
+
+<p align="center">
+  <img src="assets/quest3s.jpg" alt="Oculus Quest" width="600">
+  <br>
+</p>
+
+The Oculus Quest controller provides 6-DoF tracking for intuitive end-effector control. The right controller is used for robot manipulation with the following controls:
+
+- **RG (Right Grip)**: Must be pressed to enable robot movement
+- **RTr (Right Trigger)**: Controls gripper (press to close, release to open)
+- **A Button**: Request robot reset
+- **Right controller pose**: Controls end-effector delta pose
+
 ## 0. Franka Control Instructions
 
 In this version, we use [Polymetis](https://polymetis-docs.github.io/) to control Franka. Since Polymetis does not support Python 3.10 and is recommended to run on NUC separately, we use Zerorpc for remote communication implementation. The specific process is as follows:
@@ -149,6 +165,144 @@ Manually move the master arm so that its joint angles roughly match the current 
 utils-joint-offsets
 ```
 Copy the resulting `joint_offsets` into the corresponding fields in `record_cfg.yaml`.
+
+### 2.5 Oculus Quest Setup (For Oculus Teleoperation Mode)
+
+If you plan to use Oculus Quest for teleoperation, follow these steps to set up the device:
+
+#### 2.5.1 Install ADB (Android Debug Bridge)
+
+ADB is required for communication between Oculus Quest and the computer.
+
+```bash
+# On Ubuntu
+sudo apt install android-tools-adb
+
+# Verify installation
+adb version
+```
+
+#### 2.5.2 Enable Developer Mode on Oculus Quest
+
+1. Create or join a developer organization at [Meta for Developers](https://developer.oculus.com/manage/organizations/create/)
+2. Open the Meta Quest app on your phone
+3. Go to **Settings** → Select your device → **More Settings** → **Developer Mode**
+4. Enable **Developer Mode** toggle
+
+#### 2.5.3 Connect Oculus Quest to Computer
+
+**Option A: USB Connection (Recommended for initial setup)**
+
+1. Connect Oculus Quest to your computer using a USB-C cable
+2. Put on the headset and allow USB debugging when prompted
+3. Check **Always allow from this computer**
+4. Verify connection:
+```bash
+adb devices
+# Expected output:
+# List of devices attached
+# <device_id>    device
+```
+
+**Option B: Wireless Connection (More portable for operation)**
+
+1. First connect via USB cable
+2. Ensure both Oculus Quest and computer are on the same network
+3. Get the Oculus Quest IP address:
+```bash
+adb shell ip route
+# Look for the IP after "src", e.g., 192.168.110.62
+```
+4. Configure the IP in `record_cfg.yaml`:
+```yaml
+teleop:
+  oculus_config:
+    ip: "192.168.110.62"  # Your Oculus Quest IP address
+```
+
+#### 2.5.4 Install Oculus Reader APK
+
+The Oculus Reader APK comes pre-packaged with this project. To install it:
+
+```bash
+# Navigate to the APK directory
+cd lerobot_teleoperator_franka/lerobot_teleoperator_franka/oculus/oculus_reader/APK
+
+# Install the APK to Oculus Quest
+adb install -r teleop-debug.apk
+```
+
+After installation, the app will appear in your Oculus Quest library under **Unknown Sources**.
+
+#### 2.5.5 Configure Oculus Teleoperation in record_cfg.yaml
+
+```yaml
+record:
+  control_mode: "oculus"  # Set control mode to oculus
+  
+  teleop:
+    control_mode: "oculus"
+    oculus_config:
+      ip: "192.168.110.62"  # Oculus Quest IP address
+      use_gripper: True
+      pose_scaler: [2.0, 1.5]  # [position_scale, orientation_scale]
+      channel_signs: [1, 1, 1, -1, -1, 1]  # Axis direction signs [x, y, z, rx, ry, rz]
+```
+
+#### 2.5.6 Oculus Controller Controls
+
+| Control | Function |
+|---------|----------|
+| **RG (Right Grip)** | Press and hold to enable robot movement |
+| **RTr (Right Trigger)** | Press to close gripper, release to open |
+| **A Button** | Request robot reset |
+| **Right Controller Pose** | Controls end-effector delta pose |
+
+#### 2.5.7 Coordinate System Mapping
+
+The Oculus coordinate system is mapped to the robot coordinate system as follows:
+
+| Oculus Axis | Robot Axis | Description |
+|-------------|------------|-------------|
+| X (right) | -Y (left) | Lateral movement |
+| Y (up) | Z (up) | Vertical movement |
+| Z (backward) | X (forward) | Forward/backward movement |
+
+#### 2.5.8 Test Oculus Connection
+
+Before recording, test the Oculus connection:
+
+```python
+from lerobot_teleoperator-franka.lerobot_teleoperator_franka.oculus.oculus_robot import OculusRobot
+
+oculus = OculusRobot(ip='192.168.110.62')
+while True:
+    action = oculus.get_action()
+    print(f"Delta pose: {action[:6]}, Gripper: {action[6]}")
+```
+
+#### 2.5.9 Troubleshooting
+
+**Connection Issues:**
+```bash
+# Restart ADB server
+adb kill-server
+adb start-server
+
+# Check connected devices
+adb devices
+```
+
+**Stop the Oculus App:**
+```bash
+adb shell am force-stop com.rail.oculus.teleop
+```
+
+**Reinstall APK:**
+```bash
+adb uninstall com.rail.oculus.teleop
+adb install -r teleop-debug.apk
+```
 
 ## 3. Dataset Recording
 
