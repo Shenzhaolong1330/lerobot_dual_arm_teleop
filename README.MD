@@ -107,18 +107,8 @@ check_master_port.sh
 ```
 Next, enter the obtained serial identifier into the `port` field in `record_cfg.yaml` and set device access permissions:
 ```bash
-sudo chmod 666 <your_master_port>
+sudo chmod 666 <your_gripper_port>
 ```
-
-### 2.4 Obtain Master-Slave Joint Angle Offset Circle
-> **⚠️ WARNING: Before recording data, you must complete this step to set the correct joint offset. Otherwise, the slave arm may move unexpectedly.**
-
-
-Manually move the master arm so that its joint angles roughly match the current joint angles of the slave arm. This is done to calculate the joint angle offset cycle between the master and slave arms. Then run:
-```bash
-utils-joint-offsets
-```
-Copy the resulting `joint_offsets` into the corresponding fields in `record_cfg.yaml`.
 
 ### 2.5 Oculus Quest Setup (For Oculus Teleoperation Mode)
 

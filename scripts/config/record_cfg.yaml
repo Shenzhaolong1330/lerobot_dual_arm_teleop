@@ -27,8 +27,7 @@ record:
   robot:
     ip: &ip "192.168.110.15" # dobot server ip
     use_gripper: *use_gripper
-    left_arm_port: 4242  # left arm zerorpc port
-    right_arm_port: 4243  # right arm zerorpc port
+    robot_port: 4242  # dual-arm zerorpc port (single port for both arms)
     close_threshold: 0.7 # threshold to determine gripper open/close
     gripper_bin_threshold: 0.98 # threshold to determine gripper is closed
     gripper_reverse: false  # If gripper moves opposite, flip this value
@@ -67,8 +66,7 @@ replay:
   episode_idx: 4 # episode index to replay
   robot:
     ip: *ip
-    left_arm_port: 4242
-    right_arm_port: 4243
+    robot_port: 4242  # dual-arm zerorpc port
   control_mode: *control_mode 
 
 visualize:

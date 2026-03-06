@@ -17,9 +17,8 @@ class DobotDualArmConfig(RobotConfig):
     # Robot identification
     name: str = "dobot_dual_arm"
     
-    # Network configuration - both arms use local zerorpc
-    left_arm_port: int = 4242
-    right_arm_port: int = 4243
+    # Network configuration - single port for dual-arm control
+    robot_port: int = 4242
     
     # Gripper configuration (Robotiq 2F-85)
     use_gripper: bool = True
@@ -43,40 +42,4 @@ class DobotDualArmConfig(RobotConfig):
     max_joint_velocity: float = 2.0  # rad/s
     max_ee_velocity: float = 0.5  # m/s
     max_joint_delta: float = 0.3  # rad - max joint change per step
-
-
-@RobotConfig.register_subclass("dobot_single_arm")
-@dataclass
-class DobotSingleArmConfig(RobotConfig):
-    """Configuration for single Dobot Nova5 arm with Robotiq 2F-85 gripper."""
-    
-    # Robot identification
-    name: str = "dobot_single_arm"
-    arm_side: str = "left"  # "left" or "right"
-    
-    # Network configuration
-    robot_port: int = 4242
-    
-    # Gripper configuration (Robotiq 2F-85)
-    use_gripper: bool = True
-    gripper_max_open: float = 0.085
-    gripper_force: float = 10.0
-    gripper_speed: float = 0.1
-    gripper_reverse: bool = False
-    close_threshold: float = 0.5
-    
-    # Control configuration
-    control_mode: str = "oculus"
-    debug: bool = True
-    
-    # Joint configuration (6 DOF)
-    num_joints: int = 6
-    
-    # Cameras
-    cameras: dict[str, CameraConfig] = field(default_factory=dict)
-    
-    # Safety limits
-    max_joint_velocity: float = 2.0
-    max_ee_velocity: float = 0.5
-    max_joint_delta: float = 0.3
 

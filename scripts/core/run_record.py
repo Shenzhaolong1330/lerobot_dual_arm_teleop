@@ -61,8 +61,7 @@ class RecordConfig:
         self._parse_policy_config(policy)
         
         # Robot config
-        self.left_arm_port: int = robot.get("left_arm_port", 4242)
-        self.right_arm_port: int = robot.get("right_arm_port", 4243)
+        self.robot_port: int = robot.get("robot_port", 4242)
         self.use_gripper: bool = robot["use_gripper"]
         self.close_threshold = robot.get("close_threshold", 0.5)
         self.gripper_reverse: bool = robot.get("gripper_reverse", False)
@@ -216,8 +215,7 @@ def run_record(record_cfg: RecordConfig):
         
         # Create Dobot dual-arm robot configuration
         robot_config = DobotDualArmConfig(
-            left_arm_port=record_cfg.left_arm_port,
-            right_arm_port=record_cfg.right_arm_port,
+            robot_port=record_cfg.robot_port,
             cameras=camera_config,
             debug=record_cfg.debug,
             use_gripper=record_cfg.use_gripper,

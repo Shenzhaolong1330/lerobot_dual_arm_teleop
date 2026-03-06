@@ -18,16 +18,14 @@ class ReplayConfig:
         self.episode_idx: str = cfg.get("episode_idx", 0)
 
         # robot config
-        self.left_arm_port: int = robot.get("left_arm_port", 4242)
-        self.right_arm_port: int = robot.get("right_arm_port", 4243)
+        self.robot_port: int = robot.get("robot_port", 4242)
         self.control_mode: str = cfg.get("control_mode", "oculus")
 
 def run_replay(replay_cfg: ReplayConfig):
     episode_idx = replay_cfg.episode_idx
 
     robot_config = DobotDualArmConfig(
-        left_arm_port=replay_cfg.left_arm_port,
-        right_arm_port=replay_cfg.right_arm_port,
+        robot_port=replay_cfg.robot_port,
         debug=False,
         control_mode=replay_cfg.control_mode
     )

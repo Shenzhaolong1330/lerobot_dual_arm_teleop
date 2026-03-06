@@ -14,8 +14,7 @@ def main():
 
     # 创建机器人配置
     robot_config = DobotDualArmConfig(
-        left_arm_port=cfg["record"]["robot"].get("left_arm_port", 4242),
-        right_arm_port=cfg["record"]["robot"].get("right_arm_port", 4243),
+        robot_port=cfg["record"]["robot"].get("robot_port", 4242),
         use_gripper=cfg["record"]["robot"]["use_gripper"],
         close_threshold=cfg["record"]["robot"].get("close_threshold", 0.5),
         gripper_max_open=cfg["record"]["robot"].get("gripper_max_open", 0.085),
