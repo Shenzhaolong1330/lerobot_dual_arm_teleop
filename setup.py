@@ -16,9 +16,6 @@ setup(
         f"lerobot_robot @ file:///{ROOT}/lerobot_robot",
         f"lerobot_teleoperator @ file:///{ROOT}/lerobot_teleoperator"
     ],
-    scripts=[
-        "scripts/tools/check_master_port.sh",
-    ],
     entry_points={
         "console_scripts": [
             # core commands
